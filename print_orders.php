@@ -56,7 +56,6 @@ function print_date_time($date_, $hours_, $min_){
   					   ' ON ( hidden_orders.order_id = taxi3_orders.order_id AND hidden_orders.user_id ='.$_GET['user_id'].' ) '.					   
 					   ' WHERE taxi3_orders.class_id = car_classes.class_id '.
 					   ' AND ttl>0 AND status = 0 AND type=2 ORDER BY taxi3_orders.order_id DESC ');
-				
 /*	$user_name= ' SELECT companies.company_name, jos_users.name, companies.test_period_to'.
 							' FROM jos_users '. 
 							' INNER JOIN companies ON companies.company_id = jos_users.company_id'.
@@ -93,7 +92,6 @@ function print_date_time($date_, $hours_, $min_){
 	}			
 	echo '<br>';*/
 	echo 'всего заказов: '.mysql_num_rows($res1);	
-	
    $html_='<table id="print_orders_table" class="show_tables" rules="all">
 	   		<tr class="componentheading">
 				<th>№</th>
@@ -136,14 +134,9 @@ function print_date_time($date_, $hours_, $min_){
 										'</a>&nbsp;'.DB2Web(mysql_result($res1, $i_,10)).'</td>';
 							}
 							$html_.='<td  align="center" title="'.DB2Web(mysql_result($res1, $i_,13)).'">'.DB2Web(mysql_result($res1, $i_,11)).'</td><td>'.
-							
-							
                     	'<a a href onclick="hide('.mysql_result($res1, $i_,0).', 1); return false">'.
                         	'<span id="fine_set_button" class="button">Скрыть</span>'.
                         '</a>'.
-							
-							
-							
 							'</td></tr>';
 		}
 	}  

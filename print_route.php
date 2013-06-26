@@ -36,6 +36,8 @@
 	document.OrderForm.time_pod.value = <?php echo "'".$date_pod."'"; ?>;
 	document.OrderForm.time_pod_hours.value = <?php echo $hours_pod; ?>;
 	document.OrderForm.time_pod_min.value = Math.round(<?php echo $minutes_pod; ?>/5)*5;
+	
+	
 </script>	
 <?php
 	function getValue($res_,$n_, $col){
@@ -77,7 +79,6 @@
 		//	document.getElementById('koord1').value = point[1]+' '+point[0]; 
 
 			if( li.extra[2]>0){
-				document.getElementById('adr_domkorp'+num).disabled=true;
 				point[0] = li.extra[3];
 				point[1] = li.extra[2];
 				showPoint(num);
@@ -94,6 +95,7 @@
 			point[1] = li.extra[1];
 			showPoint(num);
 			add_point(num);
+		//	document.getElementById('adr_street'+num+1).focus();
 		}
 
 <?php  
@@ -167,4 +169,5 @@
 		}
 //	}
 ?>	
+
 </table>

@@ -4,7 +4,6 @@ function DB2Web( $text_){
 	 $in_="Windows-1251";
      return stripslashes($text_);	 
 }
-
 function print_date_time($date_, $hours_, $min_){
 	$date_pod = strtotime($date_);
 	$date_time_pod = $date_pod + $hours_*3600+$min_*60;
@@ -25,10 +24,9 @@ function print_date_time($date_, $hours_, $min_){
 	require_once ( JPATH_BASE .DS.'includes'.DS.'framework.php' );
 	$session     = &JFactory::getSession(); 
     include_once('db_ini.php');
+    include('tools.php');
 	$user_id_ =   $_GET['user_id'];
 	$company_id_ = $_GET['company_id'];
-	
-
     $query=' SELECT taxi3_orders.order_id, car_classes.class_name, time_pod, time_pod_hours, time_pod_min, '.
    					   ' 0, 0, 0, comment, price, rate, ttl, owners.company_name, customers.company_name, '.
 					   ' taxi3_orders.phone, taxi3_orders.client_name, '. 
@@ -45,7 +43,6 @@ function print_date_time($date_, $hours_, $min_){
 					   ' WHERE taxi3_orders.class_id = car_classes.class_id AND finished=0 AND '.
 					   ' ((type=1 AND taxi3_orders.company_id='.$company_id_.') OR ( type=2 AND ttl=0 AND customer_id='.$company_id_.') OR ( type=2 AND taxi3_orders.company_id='.$company_id_.' AND ttl=0 AND customer_id=0))  ORDER BY taxi3_orders.order_id DESC';
 					   					//   мои заказы которые не пошли на биржу          эти заказы я купил на бирже					      эти заказы я пытался продать но не продал
-										
    if ($user_id_>0){										
 	   $res1 = mysql_query($query);
 	   $html_.='<table id="my_orders_table" class="show_tables">
@@ -75,12 +72,30 @@ function print_date_time($date_, $hours_, $min_){
 								DB2Web(mysql_result($res1, $i_,0)).
 							'</a>'.
 				'</td>'.
-					 '<td align="center" title="'.DB2Web(mysql_result($res1, $i_,12)).'">'.DB2Web(mysql_result($res1, $i_,1)).'</td>'.
-					 '<td align="center" title="'.DB2Web(mysql_result($res1, $i_,12)).'">'.print_date_time(mysql_result($res1, $i_,2), mysql_result($res1, $i_,3), mysql_result($res1, $i_,4)).'</td><td>'.
-							$addresses.'</td>'.
-							'<td align="center" title="'.DB2Web(mysql_result($res1, $i_,15)).'">'.DB2Web(mysql_result($res1, $i_,14)).'</td>'.
-							'</td><td >'.
+					 '<td align="center" title="'.DB2Web(mysql_result($res1, $i_,12)).'">'.
+							'<a href="#" onclick="edit_order('.DB2Web(mysql_result($res1, $i_,0)).'); return false;">'.
+							 DB2Web(mysql_result($res1, $i_,1)).
+							'</a>'.
+						 '</td>'.
+						 '<td align="center" title="'.DB2Web(mysql_result($res1, $i_,12)).'">'.
+							'<a href="#" onclick="edit_order('.DB2Web(mysql_result($res1, $i_,0)).'); return false;">'.
+						 print_date_time(mysql_result($res1, $i_,2), mysql_result($res1, $i_,3), mysql_result($res1, $i_,4)).
+							'</a>'.
+						 '</td>'.
+						 '<td>'.
+							'<a href="#" onclick="edit_order('.DB2Web(mysql_result($res1, $i_,0)).'); return false;">'.
+							$addresses.
+							'</a>'.
+							'</td>'.
+							'<td align="center" title="'.DB2Web(mysql_result($res1, $i_,15)).'">'.
+							'<a href="#" onclick="edit_order('.DB2Web(mysql_result($res1, $i_,0)).'); return false;">'.
+							PrepPhone(DB2Web(mysql_result($res1, $i_,14))).
+							'</a>'.
+							'</td>'.
+							'<td >'.
+							'<a href="#" onclick="edit_order('.DB2Web(mysql_result($res1, $i_,0)).'); return false;">'.
 							DB2Web(mysql_result($res1, $i_,8)).
+							'</a>'.
 							'</td><td align="center" style="font-size:14px">'.
 							DB2Web(mysql_result($res1, $i_,9)).
 							' руб.</td>'.
@@ -95,10 +110,3 @@ function print_date_time($date_, $hours_, $min_){
 	   echo $html_;
 	}	   
 ?>
-
-
-
-
-
-
-

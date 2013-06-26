@@ -28,9 +28,10 @@ function DB2Web( $text_){
 	 return stripslashes($text_);
 }
 session_start();
-   include_once('db_ini.php');
-   $company_id_ = $_GET['company_id'];
-   $res_drivers = mysql_query(' SELECT driver_id, driver_name, driver_phone FROM drivers WHERE drivers.company_id = '.$company_id_);
+    include('tools.php');
+    include_once('db_ini.php');
+    $company_id_ = $_GET['company_id'];
+    $res_drivers = mysql_query(' SELECT driver_id, driver_name, driver_phone FROM drivers WHERE drivers.company_id = '.$company_id_);
    
 ?>	   
 <?php      echo 'Всего водителей: '.mysql_num_rows($res_drivers);?>
@@ -43,7 +44,7 @@ session_start();
 			<?php   for ($i_=0; $i_<mysql_num_rows($res_drivers); $i_++){   ?>
       		<tr>
 				<td align="center"><?php echo DB2Web(mysql_result($res_drivers, $i_,1))?></td>
-				<td align="center"><?php echo DB2Web(mysql_result($res_drivers, $i_,2))?></td>
+				<td align="center"><?php echo PrepPhone(DB2Web(mysql_result($res_drivers, $i_,2)))?></td>
                 <td align="center">
                  	<a onclick="DeleteDriver(<?php echo DB2Web(mysql_result($res_drivers, $i_,0))?>)">
                       	<span id="fine_set_button" class="button">Удалить</span>

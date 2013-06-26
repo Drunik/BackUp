@@ -27,7 +27,7 @@ function DB2Web( $text_){
 }
 function printRates(){
    $txt='';
-   for ($i_=0; $i_<25; $i_++){
+   for ($i_=1; $i_<11; $i_++){
 	   $selected = ''; 
 	   if ($i_==10){
 	   		$selected =' selected '; 

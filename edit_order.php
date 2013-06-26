@@ -14,7 +14,7 @@ function ShowPhone(var phone_number) {
 <?php 
 function printRates(){
    $txt='';
-   for ($i_=0; $i_<25; $i_++){
+   for ($i_=1; $i_<11; $i_++){
 	   $selected = ''; 
 	   if ($i_==10){
 	   		$selected =' selected '; 
@@ -95,7 +95,8 @@ function print_date_time($date_, $hours_, $min_){
 				Заказ № <?php echo DB2Web(mysql_result($res_order, $i_, 0))?>
 			</th>
 			<td rowspan="21" >
-            Здесь будет полная история по заказу
+            
+<!--            Здесь будет полная история по заказу
 			<table border="1" align="center">
 			<?php if (mysql_num_rows($res_log) != 0){?>
 			   <?php for ($l=0; $l<mysql_num_rows($res_log); $l++){?>
@@ -148,6 +149,7 @@ function print_date_time($date_, $hours_, $min_){
 					</tr>
 			   <?php }?>
 			</table>
+-->            
 			</td>
 		</tr>
 		<tr>
@@ -264,7 +266,7 @@ function print_date_time($date_, $hours_, $min_){
 				Доп. информация	
 			</th>
 			<td>
-				<?php echo DB2Web(mysql_result($res_order, $i_, 5))?>
+				<?php echo DB2Web(mysql_result($res_order, $i_, 11))?>
 			</td>
 		</tr>
 		<tr>

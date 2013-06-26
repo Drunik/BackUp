@@ -1,5 +1,5 @@
 ﻿<?php 
-//	if (strlen(trim($_POST['modlgn_username']))>1){
+	include_once('tools.php');
 ?>
 <script>
 //	alert('<?php echo $_POST['modlgn_passwd']; ?>');
@@ -149,22 +149,30 @@ function AddCar(){
             }); 
 			ShowCars(<?php echo $_SESSION['company_id']?>);
 	}
-
-
 function ShowSMSSettings(){
             $.ajax({  
 	           url: "./my_source_codes/show_sms_settings.php?company_id=<?php echo $_SESSION['company_id']?>",  
                 cache: false,  
                 success: function(html){  
-						$("#Clients").html(html); 
+		$("#Clients").html(html); 
                 }  
             });  
 			$(".tab_content").hide();
 			var activeTab = "#Clients";
 			$(activeTab).fadeIn();
 }
-
-
+function SaveSMSSettings(){
+            $.ajax({  
+	           url: "./my_source_codes/show_sms_settings.php?company_id=<?php echo $_SESSION['company_id']?>",  
+                cache: false,  
+                success: function(html){  
+		$("#Clients").html(html); 
+                }  
+            });  
+			$(".tab_content").hide();
+			var activeTab = "#Clients";
+			$(activeTab).fadeIn();
+}
 function ShowClients(){
             $.ajax({  
 	           url: "./my_source_codes/show_clients.php?company_id=<?php echo $_SESSION['company_id']?>",  
@@ -183,7 +191,9 @@ function AddClient(){
 			   &company_id=<?php echo $_SESSION['company_id']?>"
 			   +"&client_phone="+document.getElementById('client_phone').value
 			   +"&client_description="+document.getElementById('client_description').value
-			   +"&client_no_cash="+document.getElementById('client_no_cash').value
+			   +"&client_card_number="+document.getElementById('client_card_number').value
+			   +"&client_discount="+document.getElementById('client_discount').value
+			   +"&client_no_cash="+document.getElementById('client_no_cash').checked 
 			   , cache: false,  
                 success: function(html){  
 						$("#debugggg").html(html); 
@@ -329,7 +339,6 @@ function del_car_driver(car_drv_id){
 function SetDriverCar(order_id_){
 	var   driver_set_id = document.getElementById('driver_set').value;
 	var    order_status = document.getElementById('status_check').value;
-//	alert(order_status);
 	$.ajax({  
        url: "./my_source_codes/driver_set.php?order_id="+order_id_+"&driver_set_id="+driver_set_id+"&order_status="+order_status,  
           cache: false,  
@@ -341,31 +350,28 @@ function SetDriverCar(order_id_){
 	bookmark_activate('idMyOrders', "#MyOrders");
 	return false;
 }
-function add_car_driver(order_id_){
+function add_car_driver(){
 	var driver_id=document.getElementById('driver_select').value;
 	var car_id=document.getElementById('car_select').value;
-	if (car_id>0){ 		
-		if(driver_id>0){
-			$.ajax({  
-		       url: "./my_source_codes/driver_set.php?order_id="+order_id_+"&driver_set_id="+driver_set_id,  
-			          cache: false,  
-			          success: function(html){  
-		              loadCasrByDrivers();  
+	if ((car_id>0)&&(driver_id>0)){
+		$.ajax({  
+//	       url: "./my_source_codes/driver_set.php?order_id="+order_id_+"&driver_set_id="+driver_set_id,  
+	       url: "./my_source_codes/add_car_drv.php?company_id=<?php echo $_SESSION['company_id']?>&driver_id="+driver_id+"&car_id="+car_id,  
+		          cache: false,  
+		          success: function(html){
+		              	loadCasrByDrivers();
+						$("#debugggg").html(html);
 		        }  
 		     }); 
-		}
 	}
 }
 function check_black_list(){
-	
 	var phone = '8'+trim(document.OrderForm.phone.value);
-	
 //	<?php
 //		$client_phone = preg_replace("#[^0-9]*#is", "", phone);
 //	?>
 //	phone = <?php echo $client_phone ?>;
 //	alert(phone);
-	
 	$.post("./my_source_codes/check_black_list.php", 
 			{ company_id: <?php echo $_SESSION['company_id'] ?>, user_id: <?php echo $_SESSION['user_id'] ?>, client_number: phone},
   			function(html){
@@ -419,7 +425,6 @@ function printClasses($company_id, $db){
 */
 function printClasses($class_id, $db){
 /*   $classes_query =  ' SELECT * FROM car_classes ORDER BY class_id ';
-    
    $db->setQuery( $classes_query );   $temp_result = $db->Query();   $classes_array=$db->loadRowList();
    $txt='';
    for ($i_=0; $i_<$db->getNumRows($temp_result); $i_++){
@@ -431,7 +436,6 @@ function printClasses($class_id, $db){
    }
    return 	$txt;*/
 	$company_id_ = $_SESSION['company_id'];
-   
 	$classes_query =  mysql_query('SELECT
 				car_classes.class_id 		AS class_id_
 			       ,car_classes.class_name 		AS class_name_
@@ -443,18 +447,14 @@ function printClasses($class_id, $db){
 			LEFT JOIN companies ON companies.company_id = '.$company_id_.'
 			WHERE companies_tarifs.company_id =  '.$company_id_.'
 			ORDER BY car_classes.class_id');
-
 	while ($line = mysql_fetch_assoc($classes_query)){
 	   $selected = ''; 
 	   if ($line['class_id_']==$line['default_car_class_']){
 	   		$selected =' selected '; 
 		}  		
-		
 		$txt.= '<option value="'.$line['class_id_'].'" '.$selected.'>'.$line['class_name_'].'</option>';
-	
 	}			
    return 	$txt;   
-   
 }
 function fillDefTime($time_){
     if (strlen(trim($city_))<1){
@@ -537,7 +537,7 @@ function printRates(){
                 url: "./my_source_codes/stop.php?order_id="+order_id,  
                 cache: false,  
 				success: function(html){ 
-				    $("#debug").html(html);  
+				    $("#debugggg").html(html);  
                 }
             }); 
        }  
@@ -775,7 +775,6 @@ function printRates(){
 			$(this).parent("li").addClass("active"); //добавить класс "active" к выбраной вкладке
 			//$(".tab_content").hide(); //Скрыть вкладку и ее содержание			
 			var activeTab = '#' + $(this).attr("id");
-
 			if (activeTab=='#idCompany'){
 				ShowCompany(<?php echo $_SESSION['company_id']?>);
 			};
@@ -847,7 +846,6 @@ function printRates(){
 			myMap.setCenter([point[1], point[0]], 15);
 		}
 	}
-	
 	function showPoint2(num){
 		bookmark_activate('idMap', "#Map");
 	//	alert(2);
@@ -866,13 +864,20 @@ function printRates(){
 			myMap.setCenter([coords[num][1], coords[num][0]], 15);
 		}
 	}
+
 	function calcPrice(){
 		var RouteLength = document.getElementById('distance').value; 
-		RoutePrice = RouteLength * 35; 
+		var ClassAuto   	= document.getElementById('class_auto').value; 
+		var CompanyId   	= <?php echo $_SESSION['company_id']?>;
+		var TimeHours   	= document.getElementById('time_pod_hours').value; 
+		var TimeMin   		= document.getElementById('time_pod_min').value; 
+		var RoutePrice 		= CalcCost(RouteLength,CompanyId, TimeHours,TimeMin, ClassAuto); 
+//		RoutePrice = RouteLength * 35; 
 		RoutePrice = Math.round(RoutePrice/5);
 		document.getElementById('price').value = RoutePrice*5; 
 		calcDiscount();
 	}
+
 	function calcDiscount(){
 		var RoutePrice = document.getElementById('price').value; 
 		var RouteDiscount = document.getElementById('discount').value; 
@@ -942,6 +947,7 @@ function printRates(){
 			success: function(html){  
 				$("#adr_conteiner").html(html); 
 				calcRoute(); 
+				document.getElementById('adr_street'+coords.length).focus();
 			}  
 		});
 	}
@@ -961,29 +967,26 @@ function show_phone(){
           url: "http://vtsystem.ru/ast/get_phone2.php",  
           cache: false,  
           success: function(html){
-				$("#top_new_calls").html(html); 
+				$("#top_new_calls").html(html);
+				$("#debugggg").append();
 //				$("#top_new_calls").append(html);
           }  
     });
 	return false;
 }
-        
 $(document).ready(function(){  
    	setInterval('show_phone()',3000);  
 });
-		
 function show_settings(){
 	$("#input_routes").hide();
 	$("#settings").show();
 }	
-
 $(document).ready(function(){  
 	$("#idul1 li a").click(function(){
 	    $("#input_routes").show();
 	    $("#settings").hide();
 	});  	
 });
-		
 function add_tarif(id_){
 	var $id = id_,
 	 $car_class_id = $id,
@@ -1010,7 +1013,7 @@ function edit_tarif(id_,field_){
 	 $min_sum = $("#min_sum"+$id).val(),
 	 $min_km = $("#min_km"+$id).val(),
 	 $base_price = $("#base_price"+$id).val();
-	$field = "#"+field_;
+	 $field = "#"+field_;
             $.ajax({  
 	           url: "./my_source_codes/edit_tarif.php?user_id=<?php echo $_SESSION['user_id']?>
 			   &company_id=<?php echo $_SESSION['company_id']?>"
@@ -1021,7 +1024,6 @@ function edit_tarif(id_,field_){
 			   +"&base_price="+$base_price
 			   , cache: false,  
                 success: function(html){
-				//alert(html);
 				$($field).css("background-color","#caeaf4");
                 }  
             }); 
@@ -1080,7 +1082,113 @@ function del_dispetcher(id_){
                 }  
             }); 
 			show_dispetchers();
-}	
+}
+function add_time_period(){
+	var
+	 $user_id = <?php echo $_SESSION['user_id']?>,
+	 $company_id = <?php echo $_SESSION['company_id']?>,
+	 $name = $("#new_period_name").val(),
+	 $time_from_hours = $("#new_time_from_hours").val(),
+	 $time_from_min = $("#new_time_from_min").val(),
+	 $time_to_hours = $("#new_time_to_hours").val(),
+	 $time_to_min = $("#new_time_to_min").val(),	 
+	 $distance_1 = $("#new_distance_1").val(),
+	 $distance_2 = $("#new_distance_2").val();
+            $.ajax({  
+	           url: "./my_source_codes/add_time_period.php"
+			   +"?user_id="+$user_id
+			   +"&company_id="+$company_id
+			   +"&name="+$name
+			   +"&time_from_hours="+$time_from_hours
+			   +"&time_from_min="+$time_from_min
+			   +"&time_to_hours="+$time_to_hours
+			   +"&time_to_min="+$time_to_min
+			   +"&distance_1="+$distance_1
+			   +"&distance_2="+$distance_2
+			   , cache: false,  
+                success: function(html){
+	       // Выводим обновленные данные с новым списком периодов времени
+	       $("#debugggg").html(html);
+	       ShowCompany($company_id);
+                }  
+            }); 
+}
+function edit_time_period(id_,field_){
+	var
+	 $user_id = <?php echo $_SESSION['user_id']?>,
+	 $company_id = <?php echo $_SESSION['company_id']?>,
+	 $time_period_id = id_,
+	 $name = $("#name_time"+id_).val(),
+	 $time_from_hours = $("#time_from_hours"+id_).val(),
+	 $time_from_min = $("#time_from_min"+id_).val(),
+	 $time_to_hours = $("#time_to_hours"+id_).val(),
+	 $time_to_min = $("#time_to_min"+id_).val(),
+	 $distance_1 = $("#distance_1"+id_).val(),
+	 $distance_2 = $("#distance_2"+id_).val();
+	 $field = "#"+field_;
+            $.ajax({  
+	           url: "./my_source_codes/edit_time_period.php"
+			+"?user_id="+$user_id
+			+"&company_id="+$company_id
+			+"&time_period_id="+$time_period_id
+			+"&name="+$name
+			+"&time_from_hours="+$time_from_hours
+			+"&time_from_min="+$time_from_min
+			+"&time_to_hours="+$time_to_hours
+			+"&time_to_min="+$time_to_min
+			+"&distance_1="+$distance_1
+			+"&distance_2="+$distance_2
+			, cache: false,  
+                success: function(html){
+				$("#debugggg").html(html);
+				$($field).css("background-color","#caeaf4");
+                }  
+            });
+}	    
+function del_time_period(id_){
+            $.ajax({  
+		 url: "./my_source_codes/del_time_period.php?id="+id_
+		,cache: false  
+                ,success: function(html){
+			// Выводим обновленные данные
+			ShowCompany(<?php echo $_SESSION['company_id']?>);
+                }  
+            }); 
+}
+function edit_ext_tarif(period_id_, div_table_tr_, id_, field_){
+	var
+	 $user_id = <?php echo $_SESSION['user_id']?>,
+	 $company_id = <?php echo $_SESSION['company_id']?>,
+	 $period_id = period_id_,	 
+	 $car_class_id = id_,
+	 $ratio_1 = $(div_table_tr_+"ratio_1").val(),
+	 $ratio_2 = $(div_table_tr_+"ratio_2").val(),
+	 $ratio_3 = $(div_table_tr_+"ratio_3").val(),
+	 $price_1 = $(div_table_tr_+"price_1").val(),
+	 $price_2 = $(div_table_tr_+"price_2").val(),
+	 $price_3 = $(div_table_tr_+"price_3").val(),
+	 $field = "#"+field_;
+            $.ajax({  
+	           url: "./my_source_codes/edit_ext_tarif.php"
+			+"?user_id="+$user_id
+			+"&company_id="+$company_id
+			+"&period_id="+$period_id
+			+"&car_class_id="+$car_class_id
+			+"&ratio_1="+$ratio_1
+			+"&ratio_2="+$ratio_2
+			+"&ratio_3="+$ratio_3
+			+"&price_1="+$price_1
+			+"&price_2="+$price_2
+			+"&price_3="+$price_3
+			, cache: false,  
+                success: function(html){
+				$("#debugggg").html(html);
+				$($field).css("background-color","#caeaf4");
+                }  
+            });
+	// alert(div_table_tr_+"ratio_1"+'---'+$(div_table_tr_+"ratio_1").val());   
+
+}	  
 </script>
 <?php $left_half_wid = 700; 
 	  $left_half_hei = 500; 
@@ -1090,10 +1198,10 @@ function del_dispetcher(id_){
 		<td id="left_side" valign="top">
 			<ul class="tabs" id="idul1">
 				<li><a href="#MyOrders"	 	id="idMyOrders">Активные</a></li>
-				<li><a href="#History"		id="idHistory">История</a></li>
-				<li><a href="#Online" 		id="idOnline">На линии</a></li>
+				<li><a href="#History"	id="idHistory">История</a></li>
+				<li><a href="#Online" 	id="idOnline">На линии</a></li>
 				<li><a href="#Map" 		id="idMap">Карта</a></li>
-				<li><a href="#Company" 		id="idCompany">Настройки</a></li>
+				<li><a href="#Company" 	id="idCompany">Настройки</a></li>
 			</ul>
 			<form id="OrderForm" name="OrderForm" method="post" onSubmit="return test();" action="./index.php?option=com_content&view=article&id=56&Itemid=51&addpar=orders&act=add">
 			<div id="top_left_container">	

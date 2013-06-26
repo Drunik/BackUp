@@ -18,18 +18,28 @@ function setPhone() {
     inputs_new = inputs;
 }
 
+     $(document).ready(function(){
+	  $(".phone_number").bind('input', function(){
+	       $(this).val($(this).val().replace(/[^\d\)\-]/g,""));
+	  });
+     });
+     
+
+myString = myString.replace(/[^\d\+]/g,"");
 </script>
 <?php
-session_start();
-   include_once('db_ini.php');
-   $company_id_ = $_GET['company_id'];
-   $user_group = 2; // диспетчеры
+
+    session_start();
+    include_once('db_ini.php');
+    include('tools.php');
+    $company_id_ = $_GET['company_id'];
+    $user_group = 2; // диспетчеры
    
-   $res_dispetchers =     mysql_query('SELECT
-					 id
-					,name
-					,username
-					,phone
+    $res_dispetchers =     mysql_query('SELECT
+					 id as id
+					,name as name
+					,username as username
+					,phone as phone
 				   FROM jos_users
 				   WHERE user_group = '.$user_group.'
 				   AND company_id = '.$company_id_);
@@ -44,7 +54,7 @@ session_start();
 <?php   while ($line = mysql_fetch_assoc($res_dispetchers)){   ?>
      <tr>
 	  <td align="center"><?php echo $line['name']?></td>
-	  <td align="center"><?php echo $line['phone']?></td>
+	  <td align="center"><?php echo preg_replace("/([0-9]{3})([0-9]{3})([0-9]{2})([0-9]{2})/", "+7 ($1) $2-$3-$4", $line['phone'])?></td>
 	  <td align="center"><span id="del_dispetcher" class="button" onclick="del_dispetcher(<?echo $line['id']?>);">Удалить</span></td>
      </tr>
 <?php	}  ?>
@@ -53,7 +63,7 @@ session_start();
      </tr>		    
      <tr>
 	     <td><input type="text" size="50" name="dispetcher_name" id="dispetcher_name" placeholder="Фамилия Имя Отчество" /></td>
-	     <td>8(<input  name="phone" type="text"  name="dispetcher_phone"  id="dispetcher_phone" onkeydown="setPhone();" value="" maxlength="13" onblur="check_black_list(); return false;" placeholder="Телефон"/></td>
+	     <td>8(<input class="phone_number" name="phone" type="text"  name="dispetcher_phone"  id="dispetcher_phone" onkeydown="setPhone();" value="" maxlength="13" onblur="check_black_list(); return false;" placeholder="Телефон"/></td>
 	     <td><span id="add_dispetcher" class="button" onclick="add_dispetcher()">Добавить</span></td>
      </tr>
    </table>

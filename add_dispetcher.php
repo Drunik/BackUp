@@ -4,8 +4,11 @@
 	$company_id = $_GET['company_id'];
 	$name = $_GET['dispetcher_name'];
 	$phone = $_GET['dispetcher_phone'];
+	$phone = preg_replace("#[^0-9]*#is", "", $phone);
+//	$phone = $_GET['dispetcher_phone'];
 	$username = $phone;
-	$password = $phone;
+	$salt = "\x73\x41\x6C\x54";
+	$password = md5($phone.$salt);
 	$user_type = 'Manager';
 	$user_group = 2; //Диспетчеры
 	
