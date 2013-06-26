@@ -10,8 +10,7 @@
 	$tarif_id = $_GET['tarif_id'];
 	
 	$query = 'UPDATE companies_tarifs
-			SET	 company_id = "'.$company_id.'"
-				,user_id = "'.$user_id.'"						
+			SET	 user_id = "'.$user_id.'"						
 				,car_class_id = "'.$car_class_id.'"	
 				,min_sum = "'.$min_sum.'"	
 				,min_km = "'.$min_km.'"	

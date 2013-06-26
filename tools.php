@@ -1,111 +1,65 @@
-<?php
-
-function PrepPhone($phone_){
-
-	$res = $phone_;
-
-	if (strlen($phone_)==11){
-
-		$res = substr($phone_, 0, 1).'('.substr($phone_, 1, 3).')'.substr($phone_, 4, 3).'-'.substr($phone_, 7, 2).'-'.substr($phone_, 9, 2);
-
-	}
-
-	return $res;
+<script type="text/javascript">
+/*
+function SendSMS(type_sms, order_id) {
+	   var company_id   	= <?php echo $_GET['company_id']; ?>;
+	  // var order_id   	= $('#client_order_test').val();
+  
+	   $.ajax({  
+	      url: "./my_source_codes/sendsms.php?user_id=<?php echo $_GET['user_id']?>"
+		      +"&order_id="	+order_id
+		      +"&type_sms="	+type_sms
+		      +"&company_id="	+company_id
+		     ,cache: false
+		     ,success: function(html){
+				$("#debugggg").html(html); 
+			 }  
+	    });  
+     
+}     
+    
+//     проверка правильности СМС
+function TestSMS() {
+	   var company_id   	= <?php echo $_GET['company_id']; ?>;
+	   var order_id   	= $('#client_order_test').val();
+	   $.ajax({  
+	      url: "./my_source_codes/testsmstext.php?user_id=<?php echo $_GET['user_id']?>"
+		      +"&order_id="	+order_id
+		      +"&company_id="	+company_id
+		     ,cache: false
+		     ,success: function(html){
+				$("#sms_test_input_point").html(html);
+			 }  
+	    });  
 
 }
+*/	
+</script>	
 
-function ShowSMS($type_,$order_id_, $company_id, $test_){
+
+
+<?php
+
+function fill_sms($sms_, $marka_, $number_, $color_, $addresses_, $cost_){
+	$res = str_replace('%марка%', 		$marka_, 	$sms_); 
+	$res = str_replace('%номер%', 		$number_, 	$res); 
+	$res = str_replace('%цвет%', 		$color_, 	$res); 
+	$res = str_replace('%откудакуда%', 	$addresses_, 	$res);
+	$res = str_replace('%цена%', 		$cost_, 	$res);
+	return $res;
+}
+
+
+function PrepPhone($phone_){
+	$res = $phone_;
+	if (strlen($phone_)==11){
+		$res = substr($phone_, 0, 1).'('.substr($phone_, 1, 3).')'.substr($phone_, 4, 3).'-'.substr($phone_, 7, 2).'-'.substr($phone_, 9, 2);
+	}else if (strlen($phone_)==10){
+		$res = '('.substr($phone_, 0, 3).')'.substr($phone_, 3, 3).'-'.substr($phone_, 6, 2).'-'.substr($phone_, 8, 2);
+	}
+	return $res;
+}
 
 	
-
-	$send_sms = false;
-
-	$res_order = mysql_query('SELECT taxi3_orders.order_id 	as order_id
-
-		 , taxi3_orders.car_id				as car_id
-
-		 , cars.model					as cars_model
-
-		 , cars.reg_number				as cars_reg_number
-
-		 , cars.color					as cars_color'.
-
-		 ' FROM taxi3_orders '.
-
-		 ' INNER JOIN cars ON cars.car_id = taxi3_orders.car_id'.
-
-		 ' WHERE taxi3_orders.order_id = '.$order_id_) or die(mysql_error());
-
-	$res_company = mysql_query('SELECT designated_driver 	as designated_driver
-
-		    , designated_driver_sms_text 	as designated_driver_sms_text
-
-		    , driver_confirm_order		as driver_confirm_order
-
-		    , driver_confirm_order_sms_text	as driver_confirm_order_sms_text
-
-		    , car_filed				as car_filed
-
-		    , car_filed_sms_text		as car_filed_sms_text
-
-		    , company_english_name		as company_english_name
-
-		    , all_cars				as all_cars
-
-  		    , all_cars_sms_text			as all_cars_sms_text'.
-
-		   ' FROM companies '.
-
-		   ' WHERE companies.company_id = '.$company_id) or die(mysql_error());
-
-	$row_order = mysql_fetch_assoc($res_order);
-
-	$row_company = mysql_fetch_assoc($res_company);
-
-	switch ($type_) {
-
-	case 'designated_driver':	$text_= $row_company['designated_driver_sms_text'];	if ($row_company['designated_driver'] == 1) 	{$send_sms = true;}	break;
-
-	case 'driver_confirm_order':	$text_= $row_company['driver_confirm_order_sms_text'];	if ($row_company['driver_confirm_order']) 	{$send_sms = true;}	break;
-
-	case 'car_filed':		$text_= $row_company['car_filed_sms_text'];		if ($row_company['car_filed'])			{$send_sms = true;}	break;
-
-	case 'all_cars':		$text_= $row_company['all_cars_sms_text'];		if ($row_company['all_cars']) 			{$send_sms = true;}	break;
-
-	default:			$text_ = '';
-
-	};
-
-	// отображать что насписано в настройках ($test_ == 'test')
-
-	if (($send_sms == true) or ($test_ == 'test')){
-
-		$string = $text_;
-
-		$search_term = '#марка#';
-
-		$replace_term = $row_order['cars_model'];
-
-		$string = str_replace($search_term,$replace_term,$string);
-
-		$search_term = '#номер#';
-
-		$replace_term = $row_order['cars_reg_number'];
-
-		$string = str_replace($search_term,$replace_term,$string);
-
-		$search_term = '#цвет#';
-
-		$replace_term = $row_order['cars_color'];
-
-		$string = str_replace($search_term,$replace_term,$string);
-
-	}
-
-	return ($string);
-
-	}
-
 function CalcCost($distance,$company_id, $hour ,$min, $car_class){
      
      $cost = 0;

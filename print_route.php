@@ -103,7 +103,7 @@
 ?>	
 		$("#adr_street<?php echo $i?>").autocomplete("./my_source_codes/get_adr.php", {			//откуда улица
 			delay:10,
-			minChars:1,
+			minChars:3,
 			matchSubset:1,
 			autoFill:false,
 			matchContains:1,
@@ -118,7 +118,7 @@
 			delay:10,
 			minChars:0,
 			matchSubset:1,
-			autoFill:false,
+			autoFill:true,
 			matchContains:1,
 			cacheLength:1,
 			selectFirst:true,

@@ -13,6 +13,7 @@
 
 	$query = ' INSERT INTO  client_list (phone
 					, description
+					, name
 					, no_cash
 					, company_id
 					, card_number
@@ -20,6 +21,7 @@
 					, user_id
 					, datetime) 
 	VALUES ("'.$client_phone.'"
+		,"'.$client_description.'"
 		,"'.$client_description.'"
 		,"'.$client_no_cash.'"
 		,"'.$company_id_.'"

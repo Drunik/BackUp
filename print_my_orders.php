@@ -17,12 +17,13 @@ function print_date_time($date_, $hours_, $min_){
 	}
     return  $res.date('d-m-Y H:i',$date_time_pod);
 }
-	define( '_JEXEC', 1 );
+/*	define( '_JEXEC', 1 );
 	define('JPATH_BASE', '/home/vtsystemru/domains/vtsystem.ru/public_html'); 
 	define( 'DS', DIRECTORY_SEPARATOR );
 	require_once ( JPATH_BASE .DS.'includes'.DS.'defines.php' );
 	require_once ( JPATH_BASE .DS.'includes'.DS.'framework.php' );
 	$session     = &JFactory::getSession(); 
+	*/
     include_once('db_ini.php');
     include('tools.php');
 	$user_id_ =   $_GET['user_id'];

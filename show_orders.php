@@ -1,11 +1,12 @@
 ﻿<?php 
 	include_once('tools.php');
+	include_once('db_ini.php');
 ?>
 <script>
 //	alert('<?php echo $_POST['modlgn_passwd']; ?>');
 	//alert(document.getElementById('modlgn_passwd').value);	
-	document.getElementById('modlgn_username').value='<?php echo $_POST['modlgn_username']; ?>';
-	document.getElementById('modlgn_passwd').value='<?php echo $_POST['modlgn_passwd']; ?>';
+//	document.getElementById('modlgn_username').value='<?php echo $_POST['modlgn_username']; ?>';
+//	document.getElementById('modlgn_passwd').value='<?php echo $_POST['modlgn_passwd']; ?>';
 //	document.getElementById('form-login').submit();
 </script>	
 <?php
@@ -163,10 +164,10 @@ function ShowSMSSettings(){
 }
 function SaveSMSSettings(){
             $.ajax({  
-	           url: "./my_source_codes/show_sms_settings.php?company_id=<?php echo $_SESSION['company_id']?>",  
+	           url: "./my_source_codes/show_sms_settings.php?company_id=<?php echo $_SESSION['company_id']?>&user_id=<?php echo $_SESSION['user_id']?>",  
                 cache: false,  
                 success: function(html){  
-		$("#Clients").html(html); 
+					$("#Clients").html(html); 
                 }  
             });  
 			$(".tab_content").hide();
@@ -301,6 +302,20 @@ function na_torgi(order_id_){
 function Cancel_Order(order_id_){
 	alert(':-( не работает');
 }
+function TestSMS() {
+	   var company_id   	= <?php echo $_SESSION['company_id']; ?>;
+	   var order_id   	= $('#client_order_test').val();
+	   $.ajax({  
+	      url: "./my_source_codes/testsmstext.php?user_id=<?php echo $_GET['user_id']?>"
+		      +"&order_id="	+order_id
+		      +"&company_id="	+company_id
+		     ,cache: false
+		     ,success: function(html){
+				$("#sms_test_input_point").html(html);
+			 }  
+	    });  
+
+}
 function Send_SMS(order_id_,phone_,message_,sender_){
 //	$.post("./my_source_codes/sendsms.php", 
 			//{ company_id: <?php echo $_SESSION['company_id'] ?>, user_id: <?php echo $_SESSION['user_id'] ?>, order_id: order_id_, phone: phone_,message:message_,sender:sender_},
@@ -336,9 +351,18 @@ function del_car_driver(car_drv_id){
         }  
      }); 
 }
-function SetDriverCar(order_id_){
+function ChangeDriverCar(order_id_){
+	if ($('#driver_set').val() == 0) {
+		SetDriverCar(order_id_, 0)
+	}else{
+		SetDriverCar(order_id_, 1)
+		
+	}
+	
+}
+function SetDriverCar(order_id_, order_status){
 	var   driver_set_id = document.getElementById('driver_set').value;
-	var    order_status = document.getElementById('status_check').value;
+//	var    order_status = document.getElementById('status_check').value;
 	$.ajax({  
        url: "./my_source_codes/driver_set.php?order_id="+order_id_+"&driver_set_id="+driver_set_id+"&order_status="+order_status,  
           cache: false,  
@@ -348,6 +372,16 @@ function SetDriverCar(order_id_){
      }); 
 	show_my_orders();
 	bookmark_activate('idMyOrders', "#MyOrders");
+	
+	if (order_status == 1) {
+		SendSMS('designated_driver', order_id_);
+	}
+	if (order_status == 2){
+		SendSMS('driver_confirm_order', order_id_);
+	}
+	if (order_status == 3){
+		SendSMS('car_filed', order_id_);
+	}
 	return false;
 }
 function add_car_driver(){
@@ -423,30 +457,24 @@ function printClasses($company_id, $db){
    }
    return 	$txt;						
 */
-function printClasses($class_id, $db){
-/*   $classes_query =  ' SELECT * FROM car_classes ORDER BY class_id ';
-   $db->setQuery( $classes_query );   $temp_result = $db->Query();   $classes_array=$db->loadRowList();
-   $txt='';
-   for ($i_=0; $i_<$db->getNumRows($temp_result); $i_++){
-	   $selected = ''; 
-	   if ($classes_array[$i_][0]==$class_id){
-	   		$selected =' selected '; 
-		}  
-       $txt.= '<option value="'.$classes_array[$i_][0].'"'.  $selected.' '.$dis.'>'.$classes_array[$i_][1].'</option>'; 
-   }
-   return 	$txt;*/
+function printClasses($class_id){
+	global $link;
+	$txt='';
 	$company_id_ = $_SESSION['company_id'];
-	$classes_query =  mysql_query('SELECT
-				car_classes.class_id 		AS class_id_
-			       ,car_classes.class_name 		AS class_name_
-			       ,companies_tarifs.id		AS tarif_id_
-			       ,companies_tarifs.car_class_id	AS car_class_
-			       ,companies.default_car_class	AS default_car_class_
-			FROM companies_tarifs 
-			INNER JOIN car_classes ON car_classes.class_id = companies_tarifs.car_class_id
-			LEFT JOIN companies ON companies.company_id = '.$company_id_.'
-			WHERE companies_tarifs.company_id =  '.$company_id_.'
-			ORDER BY car_classes.class_id');
+	$classes_query =  mysql_query(' SELECT 
+						car_classes.class_id 		AS class_id_
+					       ,car_classes.class_name 		AS class_name_
+					       ,companies_tarifs.id		AS tarif_id_
+					       ,companies_tarifs.car_class_id	AS car_class_
+					       ,companies.default_car_class	AS default_car_class_
+					FROM companies_tarifs 
+					INNER JOIN car_classes ON car_classes.class_id = companies_tarifs.car_class_id
+					LEFT JOIN companies ON companies.company_id = '.$company_id_.'
+					WHERE companies_tarifs.company_id =  '.$company_id_.'
+					ORDER BY car_classes.class_id ', $link);
+
+//	$txt = '<option value="11111" selected >длина = '.mysql_num_rows($classes_query).'</option>';				
+					
 	while ($line = mysql_fetch_assoc($classes_query)){
 	   $selected = ''; 
 	   if ($line['class_id_']==$line['default_car_class_']){
@@ -569,10 +597,10 @@ function printRates(){
                 }  
             });
        } 		
-		 function loadNewOrder()  
+	function loadNewOrder()  
         {  
             $.ajax({  
-                url: "./my_source_codes/new_order.php",  
+                url: "./my_source_codes/new_order.php?company_id=<?php echo $_SESSION['company_id']?>",  
                 cache: false,  
                 success: function(html){  
                     $("#NewOrder").html(html);  
@@ -596,7 +624,7 @@ function printRates(){
 	});  
 	 function show_balance(){  
 		$.ajax({  
-			url: "./my_source_codes/load_balance.php?user_id=<?php echo $_SESSION['user_id']?>&company_id=<?php echo $_SESSION['company_id']?>",  
+			url: "./my_source_codes/load_balance.php?user_id=<?php echo $_SESSION['user_id']?>&company_id=<?php echo $_SESSION['company_id']?>&user_group=<?php echo $_SESSION['user_group']?>",  
 			cache: false,  
 			success: function(html){  
 				$("#balance").html(html);  
@@ -865,7 +893,50 @@ function printRates(){
 		}
 	}
 
-	function calcPrice(){
+     function calcPrice(){
+		var route_length = $('#distance').val(); 
+		var class_auto   	= $('#class_auto').val(); 
+		var company_id   	= <?php echo $_SESSION['company_id']?>;
+		var time_hours   	= $('#time_pod_hours').val(); 
+		var time_min   		= $('#time_pod_min').val(); 
+		var user_id		= <?php echo $_SESSION['user_id']?>;
+		var $vokzal = 0;
+		var $airport = 0;
+		$("#new_routes input[type=text]").each(function(){
+			if (/вокзал/.test($(this).val())){
+				$vokzal++;
+			}
+		});
+		$("#new_routes input[type=text]").each(function(){
+			if (/аэропорт/.test($(this).val())){
+				$airport++;
+			}
+		});
+				
+		$.ajax({  
+	           url: "./my_source_codes/calccost.php?user_id1=<?php echo $_SESSION['user_id']?>"
+			   +"&company_id="	+company_id
+			   +"&route_length="	+route_length
+			   +"&class_auto="	+class_auto
+			   +"&time_hours="	+time_hours
+			   +"&time_min="	+time_min
+			   +"&user_id="		+user_id
+			   +"&vokzal="		+$vokzal
+			   +"&airport="		+$airport
+			  ,cache: false
+			  ,success: function(html){
+					$("#debugggg").html(html);
+					RoutePrice = Math.round(html/5)*5;
+					$('#price').val(RoutePrice); 
+					calcDiscount();
+					
+					
+			  }  
+		 });  
+//		 return text_cal;
+     }	
+	
+	function calcPrice1(){
 		var RouteLength = document.getElementById('distance').value; 
 		var ClassAuto   	= document.getElementById('class_auto').value; 
 		var CompanyId   	= <?php echo $_SESSION['company_id']?>;
@@ -903,7 +974,7 @@ function printRates(){
             myRoute = ymaps.route(
 					str,
 					{
-               mapStateAutoApply: true, avoidTrafficJams:true // автоматически позиционировать карту
+               mapStateAutoApply: true, avoidTrafficJams:false // автоматически позиционировать карту
            }).then(function (router) {
 				route && myMap.geoObjects.remove(route);
 				route = router;
@@ -964,11 +1035,11 @@ function printRates(){
 	*/
 function show_phone(){
 	$.ajax({  
-          url: "http://vtsystem.ru/ast/get_phone2.php",  
+          url: "http://vtsystem.ru/ast/get_phone3.php?company_id=<?php echo $_SESSION['company_id']?>",  
           cache: false,  
           success: function(html){
 				$("#top_new_calls").html(html);
-				$("#debugggg").append();
+//				$("#debugggg").append(html);
 //				$("#top_new_calls").append(html);
           }  
     });
@@ -1065,6 +1136,7 @@ function add_dispetcher(){
             $.ajax({  
 	           url: "./my_source_codes/add_dispetcher.php?company_id=<?php echo $_SESSION['company_id']?>"
 			   +"&dispetcher_name="+$('#dispetcher_name').val()
+			   +"&dispetcher_password="+$('#dispetcher_password').val()
 			   +"&dispetcher_phone="+$('#dispetcher_phone').val().replace(/\D+/g,'')
 			   , cache: false,  
                 success: function(html){  
@@ -1188,7 +1260,94 @@ function edit_ext_tarif(period_id_, div_table_tr_, id_, field_){
             });
 	// alert(div_table_tr_+"ratio_1"+'---'+$(div_table_tr_+"ratio_1").val());   
 
-}	  
+}
+function form_new_order(phone_, no_cash_, name_, descr_, disc_){
+		$.ajax({  
+		url: "./my_source_codes/new_order.php?company_id=<?php echo $_SESSION['company_id']?>",  
+		cache: false,  
+		success: function(html){  
+			$("#NewOrder").html(html); 
+				document.getElementById('client_name').value = name_;
+				document.getElementById('client_phone').value = phone_;
+				document.getElementById('discount').value = disc_;
+				if (no_cash_ == '1') {
+					document.getElementById('client_name').value = name_;
+				}
+		}  
+	}); 
+	bookmark_activate('idNewOrder', "#NewOrder"); 
+
+
+;
+	return false;
+}
+
+
+	$(document).ready(function(){	
+
+		function liFormat (row, i, num) {
+			alert('11');
+			var result = row[0];
+			return result;
+		}	
+		function selectItemCompName(li) {
+			
+		}
+		
+		$("#company_name").autocomplete("./my_source_codes/get_comp_name.php", {
+			delay:10,
+			minChars:1,
+			matchSubset:1,
+			autoFill:false,
+			matchContains:1,
+			cacheLength:1,
+			selectFirst:true,
+			formatItem:liFormat,
+			maxItemsToShow:20,
+			extraParams:{comp_id:<?php echo $_SESSION['company_id']?>},
+			onItemSelect:selectItemCompName
+		});		
+		
+	});	
+function edit_sms(id_,val_){
+     $.ajax({  
+	    url: "./my_source_codes/edit_sms.php"
+		    +"?company_id=<?php echo $_SESSION['company_id']?>"
+		    +"&sms_id="+id_
+		    +"&sms_value="+val_
+		    , cache: false,  
+	 success: function(html){
+			 $('#'+id_).css("background-color","#caeaf4");
+			 $("#debugggg").html(html); 
+	 }  
+     }); 
+}
+function edit_additional_services_price(id_,price_){
+     $.ajax({  
+	    url: "./my_source_codes/edit_additional_services_price.php"
+		    +"?company_id=<?php echo $_SESSION['company_id']?>"
+		    +"&service_id="+id_
+		    +"&service_price="+price_
+		    , cache: false,  
+	 success: function(html){
+			 $('#'+id_).css("background-color","#caeaf4");
+			 $("#debugggg").html(html); 
+	 }  
+     }); 
+}
+function edit_company_info(id_,text_){
+     $.ajax({  
+	    url: "./my_source_codes/edit_company_info.php"
+		    +"?company_id=<?php echo $_SESSION['company_id']?>"
+		    +"&info_id="+id_
+		    +"&info_text="+text_
+		    , cache: false,  
+	 success: function(html){
+			 $('#'+id_).css("background-color","#caeaf4");
+			 $("#debugggg").html(html); 
+	 }  
+     }); 
+}
 </script>
 <?php $left_half_wid = 700; 
 	  $left_half_hei = 500; 
@@ -1201,11 +1360,14 @@ function edit_ext_tarif(period_id_, div_table_tr_, id_, field_){
 				<li><a href="#History"	id="idHistory">История</a></li>
 				<li><a href="#Online" 	id="idOnline">На линии</a></li>
 				<li><a href="#Map" 		id="idMap">Карта</a></li>
+	<?php if (($_SESSION['user_group'] == 7) || ($_SESSION['user_group'] == 1)){?>
 				<li><a href="#Company" 	id="idCompany">Настройки</a></li>
+	<?php }?>
 			</ul>
-			<form id="OrderForm" name="OrderForm" method="post" onSubmit="return test();" action="./index.php?option=com_content&view=article&id=56&Itemid=51&addpar=orders&act=add">
+			<form id="OrderForm" name="OrderForm" method="post" onSubmit="return test();" action="./my_source_codes/add_order.php">
 			<div id="top_left_container">	
-	<!-- Административная часть -->	
+	<!-- Административная часть -->
+	<?php if (($_SESSION['user_group'] == 7) || ($_SESSION['user_group'] == 1)){?>
 				<div id="settings" style="display: none;">
 				     <ul id="settings_tabs" class="tabs">
 					<li><a href="#" 	id="idCompany">О Компании</a></li>
@@ -1217,6 +1379,7 @@ function edit_ext_tarif(period_id_, div_table_tr_, id_, field_){
 					<li><a href="#" 	id="idSMSSettings">SMS</a></li>
 				     </ul>
 				  </div>
+	<?php }?>
 	<!--    -->			
 			    <div id="input_routes">
 				<table id="input_routes_table">
@@ -1224,19 +1387,19 @@ function edit_ext_tarif(period_id_, div_table_tr_, id_, field_){
 				  <th>Время</th>
 				  <td style=" white-space:nowrap;">
 				   <input type="text"  name="time_pod"  id="time_pod" size="9" value="<?php echo fillDefTime($_POST['time_pod']) ?>" onclick="return showCalendar('time_pod', 'y-mm-dd');"/>
-				   <select name="time_pod_hours" id="time_pod_hours" >
+				   <select name="time_pod_hours" id="time_pod_hours" onchange="calcPrice();">
 				    <?php echo printHours($_POST['time_pod_hours']) ?>
 				   </select>:
-				   <select name="time_pod_min" id="time_pod_min" >
+				   <select name="time_pod_min" id="time_pod_min" onchange="calcPrice();">
 				    <?php echo printMinutes($_POST['time_pod_min']) ?>
 				   </select>						
 				  </td>
 				  <th>Класс</th>
 				  <td>
-				   <select name="class_auto" id="class_auto"> <?php echo printClasses(1, $db) ?> </select>
+				   <select name="class_auto" id="class_auto" onchange="calcPrice();"> <?php echo printClasses(1) ?> </select>
 				  </td>
 				  <th style=" white-space:nowrap;">В пути</th>
-				   <td><input type="text" size="5" id="HumanJamsTime" name ="HumanJamsTime" /></td>
+				   <td><input type="text" size="5" id="HumanJamsTime" name ="HumanJamsTime" value="0" /></td>
 				  <td>мин.</td>
 				  <td rowspan="2">
 				   <table id="input_order_table">
@@ -1244,13 +1407,13 @@ function edit_ext_tarif(period_id_, div_table_tr_, id_, field_){
 				     <th><a href="#" onclick="calcRoute();  return false">Расстояние</a></th>
 				     <td>
 				      <input type="hidden" id="sid" name="sid" value="<?php echo session_id();?>"  />
-				      <input type="text" size="5" id="distance" name ="distance" onchange="calcPrice()"/> 	
+				      <input type="text" size="5" id="distance" name ="distance" onchange="calcPrice();" value="0"/> 	
 				     </td>
 				     <th>км.</th>
 				    </tr>
 				    <tr>			     
 				     <th>Стоимость</th>
-				     <td><input type="text" size="5" id="price" name="price" onchange="calcDiscount();"/></td>
+				     <td><input type="text" size="5" id="price" name="price" onchange="calcDiscount();" value="0" /></td>
 				     <th>руб.</th>
 				    </tr>
 				    <tr>
@@ -1291,15 +1454,17 @@ function edit_ext_tarif(period_id_, div_table_tr_, id_, field_){
 				<div id="Map" class="tab_content">
 					<div id="cont7" class="show_divs" style="width: <? echo $left_half_wid-20 ?>px; height: <? echo $left_half_hei-20 ?>px"></div>
 				</div>
-				<div id="Fine" class="tab_content"></div>				
-			<!-- Административная часть -->	
-				<div id="Company" class="tab_content"></div>
+				<div id="Fine" class="tab_content"></div>
+				<div id="Company" class="tab_content"></div>				
+	<!-- Административная часть -->
+	<?php if (($_SESSION['user_group'] == 7) || ($_SESSION['user_group'] == 1)){?>	
 				<div id="Tarifs" class="tab_content"></div>
 				<div id="SMSSettings" class="tab_content"></div>
 				<div id="Dispetchers" class="tab_content"></div>
 				<div id="Drivers" class="tab_content"></div>				
 				<div id="Cars" class="tab_content"></div>
 				<div id="Clients" class="tab_content"></div>
+	<?php }?>
 			<!--    -->	
 			</div>
 		</form>
@@ -1316,8 +1481,13 @@ function edit_ext_tarif(period_id_, div_table_tr_, id_, field_){
 				<div id="stock" class="tab_content2">
 					<div class="componentheading"></div>
 					<div id="order_conteiner" > </div>  	
-					<div id="debugggg" name="debug" >debug </div> 
-					<div id="debugggg2" name="debug2" >debug2 </div> 
+					<?php 
+						if ($_SESSION['company_id']<10){
+							echo '
+							<div id="debugggg" name="debug" >debug </div> 
+							<div id="debugggg2" name="debug2" >debug2 </div>  ';
+						}	
+					?>
 				</div>	
 				<div id="hidden_orders" class="tab_content2" >
 					Скрытые заказы

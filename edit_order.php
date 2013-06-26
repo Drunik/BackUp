@@ -1,15 +1,11 @@
 <script type="text/javascript">
-function DriverSetCheck() {
-	if (document.getElementById('driver_set').value != 0) {
-		document.getElementById('status_check').value = 1;
-	} else {
-		document.getElementById('status_check').value = 0;
-	}
-}
+
 function ShowPhone(var phone_number) {
 	phone_number = phone_number[1]+'('+phone_number[2];
 	return phone_number;
 }
+
+
 </script>
 <?php 
 function printRates(){
@@ -46,7 +42,7 @@ function print_date_time($date_, $hours_, $min_){
    					   ' 0, comment,  rate, ttl, owners.company_name, customers.company_name,'.
 					   ' no_smoking, help, smoking, curier, inomarka, trezv_driver, animal, clear_car, luggage, no_shashki, child_armchair_do_15, skin_salon,'.
 					   ' child_armchair_bolee_15, transfert_table, condit, kvit, start_rate, taxi3_orders.company_id, taxi3_orders.customer_id, '.
-					   ' taxi3_orders.finished, taxi3_orders.status, driver_id, order_status  '.
+					   ' taxi3_orders.finished, taxi3_orders.status, driver_id, order_status, entry  '.
    					   ' FROM taxi3_orders '. 
    					   ' INNER JOIN car_classes '. 
    					   ' ON taxi3_orders.class_id = car_classes.class_id '.
@@ -94,9 +90,9 @@ function print_date_time($date_, $hours_, $min_){
 			<th colspan="2">
 				Заказ № <?php echo DB2Web(mysql_result($res_order, $i_, 0))?>
 			</th>
-			<td rowspan="21" >
+<!--			<td rowspan="21" >
             
-<!--            Здесь будет полная история по заказу
+            Здесь будет полная история по заказу
 			<table border="1" align="center">
 			<?php if (mysql_num_rows($res_log) != 0){?>
 			   <?php for ($l=0; $l<mysql_num_rows($res_log); $l++){?>
@@ -149,9 +145,9 @@ function print_date_time($date_, $hours_, $min_){
 					</tr>
 			   <?php }?>
 			</table>
--->            
+           
 			</td>
-		</tr>
+--> 		</tr>
 		<tr>
 			<th>
 				Маршрут	
@@ -348,13 +344,23 @@ function print_date_time($date_, $hours_, $min_){
 				<input type="checkbox"  name="kvit"  id="kvit" size="9" <?php if ($row['kvit']){ echo 'checked'; }?>  disabled="disabled" />
 				квитанция</td>
 		</tr>								
-   </table>    
-    <br>
-	<table border="1">
 		<tr>
-		  <td align="left">
+			<td>
+				<input type="checkbox"  name="entry"  id="entry" size="9" <?php if ($row['entry']){ echo 'checked'; }?>  disabled="disabled" />
+				заезд на предприятие
+			</td>
+			<td>
+		</tr>
+		<tr>
+			<td colspan="2" width="10">
+			</td>
+		</tr>
+		<tr>
+			<th>
 				Водитель и машина
-				<select name="driver_set" id="driver_set" onchange="DriverSetCheck()">
+			</th>
+			<td>
+				<select name="driver_set" id="driver_set" onchange="ChangeDriverCar(<?php echo $_GET['order_id']?>); return false;">
 					<option value="0">не выбрано</option>
 <?php
 	   $drv_id = mysql_result($res_order, 0, 'driver_id');
@@ -367,14 +373,31 @@ function print_date_time($date_, $hours_, $min_){
 					DB2Web(mysql_result($res_set, $i, 5)).' '.DB2Web(mysql_result($res_set, $i, 2)).' '.DB2Web(mysql_result($res_set, $i, 4)).' '.
 					'</option>';
 		}   ?>  
-				</select>
-<?php	//echo 'drv_id='.$drv_id.' 0='.mysql_result($res_set, 0, 7).' 1='.mysql_result($res_set, 1, 7) ?>
+				</select>				
 			</td>
-			<td >
-					<a onclick="Send_SMS('<?php echo DB2Web(mysql_result($res_order, $i_, 0))?>','<?php echo  $client_phone_id_?>', 'Test','VTSystemRu' ); return false;">
-						<span id="send_sms_button" class="button">Отправить SMS</span>
-					</a>
-            </td>
+		</tr>
+		<tr>
+			<td colspan="2" width="10">
+			</td>
+		</tr>
+<?php $order_status = mysql_result($res_order, 0, 'order_status');
+	if ($order_status ==0){
+?>
+		<tr>
+			<td colspan="2">
+				<a onclick="SendSMS('all_cars',<?php echo $_GET['order_id']?>); return false;">
+					<span id="send_sms_button" class="button">Отправка SMS всем водителям на линии</span>
+				</a>
+			</td>
+		</tr>
+<?	}?>		
+		
+   </table>
+<!--	
+    <br>
+	<table>
+		<tr>
+			
 			<td align="right" >
 				<?php if (mysql_result($res_order, $i_, 33) == $company_id_)  {?>
 					Начальная ставка обмена <select name="rate_na_torgi" id="rate_na_torgi"><?php echo printRates() ?>%</select>
@@ -383,14 +406,19 @@ function print_date_time($date_, $hours_, $min_){
 					</a>
 				<?php }?>
 			</td>
-		</tr>	
+			
+		</tr>
     </table>
+-->	
     <br>
-	<table border="0">
+	
+<?
+	if ($order_status !=0){
+?>	
+	<table style="border: 0; width: 100%;">
 		<tr>
-			<td>
-<?php $order_status = mysql_result($res_order, 0, 'order_status'); ?>			
-				<select name="status_check" id="status_check">
+<!--			<td>
+				<select name="status_check" id="status_check" onchange="SetDriverCar(<?php echo $_GET['order_id']?>); return false;">
 					<option value="0" <?php echo ($order_status==0)?' selected ' :'' ?> >не выбрано</option>
 					<option value="1" <?php echo ($order_status==1)?' selected ':'' ?>>назначен водитель</option>
 					<option value="2" <?php echo ($order_status==2)?' selected ':'' ?>>водитель подтвердил заказ</option>
@@ -403,17 +431,29 @@ function print_date_time($date_, $hours_, $min_){
 					<span id="driver_set_button" class="button">Сохранить изменения</span>
 				</a>
 			</td>
+-->	
 			<td>
-				<?php if (mysql_result($res_order, $i_, 33) != $company_id_)  {?>
-					<a onclick="Cancel_Order(<?php echo DB2Web(mysql_result($res_order, $i_, 0))?>); return false;">
-						<span id="cancel_order_button" class="button">Отказаться от заказа</span>
-					</a>
-				<?php }?>
+				<a onclick="SetDriverCar(<?php echo $_GET['order_id']?>, 2); return false;">
+					<span id="closed_order_button" class="button">Водитель подтвердил заказ</span>
+				</a>
+			</td>
+			<td>
+				<a onclick="SetDriverCar(<?php echo $_GET['order_id']?>, 3); return false;">
+					<span id="closed_order_button" class="button">Автомобиль подан</span>
+				</a>
 			</td>
 			<td>
 				<a onclick="closeOrder(<?php echo $_GET['order_id']?>); return false;">
 					<span id="closed_order_button" class="button">Закрыть заказ</span>
 				</a>
 			</td>
+			<td>
+				<?php if (mysql_result($res_order, $i_, 33) != $company_id_)  {?>
+					<a onclick="Cancel_Order(<?php echo DB2Web(mysql_result($res_order, $i_, 0))?>); return false;">
+						<span id="cancel_order_button" class="button">Отказаться от заказа</span>
+					</a>
+				<?php }?>
+			</td>			
 		</tr>								
 	</table>
+<?	}?>	

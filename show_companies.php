@@ -19,11 +19,15 @@ session_start();
    $company_id_ = $_GET['company_id'];
    
    
-   $res_companies = mysql_query(' SELECT companies.company_id,companies.company_name, companies.Phone_Number '.
-   								' FROM companies '.
-   								' LEFT JOIN black_list_company ON companies.company_id = black_list_company.closed_company '.
-   								' WHERE black_list_company.owner_company is NULL'.
-								' and companies.company_id != '.$company_id_								
+   $res_companies = mysql_query(' SELECT
+					companies.company_id
+					,companies.company_name
+					,companies.Phone_Number
+				   FROM companies
+				   LEFT JOIN black_list_company ON companies.company_id = black_list_company.closed_company
+				   WHERE black_list_company.owner_company is NULL
+				   AND companies.developer_company = 0
+				   AND companies.company_id != '.$company_id_								
 								);
 
    

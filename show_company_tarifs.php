@@ -214,7 +214,6 @@ mysql_data_seek($res_set_time, 0);?>
 					 companies_ext_tarifs.period_id = '.$time_period['id_']) or die(mysql_error());
  
      $row = mysql_fetch_assoc($res_tarifs);
-     echo mysql_num_rows($res_tarifs);
 ?>
      <tr id="<?echo $time_period['id_'].$car_class['class_id_'];?>" car_class="<?echo $car_class['class_id_'];?>" base_price="<?echo $row['base_price_'];?>">
 	  <td><?echo $car_class['class_name_'];?></td>

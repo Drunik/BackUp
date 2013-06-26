@@ -42,20 +42,22 @@ session_start();
    $company_id_ = $_GET['company_id'];
    
    
-   $res_set  = mysql_query('SELECT 	companies.company_name		AS company_name_,
-						        all_sum					AS all_sum_,
-							companies.Description			AS description_,
-							companies.Phone_Number		AS phone_,
-							companies.default_car_class		AS default_class_,
-							agreement.DateFrom,
-							agreement.DateTo,
-							agreement.DayFrom,
-							agreement.NightFrom,
-							agreement.TariffPlan,
-							agreement.TestPeriodTo
-					FROM companies'.
-					' INNER JOIN agreement ON agreement.Company_id = companies.company_id and Active = true'.
-					' WHERE companies.company_id = '.$company_id_);
+   $res_set  = mysql_query('SELECT
+				    companies.company_name		AS company_name_
+				   ,all_sum				AS all_sum_
+				   ,companies.Description		AS description_
+				   ,companies.Phone_Number		AS phone_
+				   ,companies.default_car_class		AS default_class_
+				   ,companies.luggage_price		AS luggage_price_
+				   ,companies.child_armchair_price	AS child_armchair_price_
+				   ,companies.entry_price		AS entry_price_
+				   ,companies.vokzal_price		AS vokzal_price_
+				   ,companies.airport_price		AS airport_price_
+				   ,companies.transfert_table_price	AS transfert_table_price_
+				   ,companies.animals			AS animals_
+			      FROM
+				   companies
+			      WHERE companies.company_id = '.$company_id_);
    
    $res_set_time  = mysql_query('SELECT	     tarif_time_periods.id 			AS id_, 
 					     tarif_time_periods.name 			AS name_time_,
@@ -107,9 +109,31 @@ session_start();
 ?>
 <script>
       $(document).ready(function(){
+	  
+	  // Авто-изменение высоты страницы
 	  auto_height();
 	  
-	  // Установка галочки класса по умолчанию
+/*	Редактирование информации о компании		*/
+
+	  $("#company_info input[type=text]").bind('input', function(){
+	       var $id = $(this).attr("id");
+	       var $text = $(this).val();
+	      
+	       //alert($id+'---'+$text); 
+	       edit_company_info($id,$text);
+	  });
+	  
+	  $("#company_info textarea").bind('input', function(){
+	       var $id = $(this).attr("id");
+	       var $text = $(this).val();
+	      
+	       //alert($id+'---'+$text); 
+	       edit_company_info($id,$text);
+	  });	  
+	  
+
+/*	Установка галочки класса по умолчанию	*/
+	  
 	  $("#add_class_table input[type=checkbox]").click(function(){
 	       var $parent = '#add_class_table',
 		    $tr_id = $(this).closest("tr").attr("id"),
@@ -121,11 +145,9 @@ session_start();
 
 	       default_car_class($tr_id);
 	  });
-	  
-	  
+
 /*	Редактирование сущ. классов	*/
-
-
+	  
 	  $("#add_class_table input[type=text]").bind('input', function(){
 	       $(this).css("background-color","#fff");
 	       var $tr_id = $(this).closest("tr").attr("id"),
@@ -220,38 +242,55 @@ session_start();
 	       edit_time_period($tr_id, $id);
 	  }); 
  
-/*	       
-*/
-//	       setTimeout(function(){add_tarif($tr_id, $id)}, 3000);
-//	       add_tarif($(this).closest("tr").attr("id"), $(this).attr("id"));
-//	       var $car_class_id = $(this).closest("tr").attr("id");
-//	       alert($(this).val() + "-"+$("#min_sum"+$car_class_id).val());
+/*	Редактирование цен на доп. услуги		*/ 
+ 
+	  // Проверка полей с цифрами, все кроме цифр при вводе удаляется
+	  $(".numbers_only").bind('input', function(){
+	       $(this).val($(this).val().replace(/[^\d]/g,""));
+	  });
+
+	  // Изменение цен на дополнительные услуги
+	  $("#additional_services input[type=text]").bind('input', function(){
+	       var $service_id = $(this).attr('id');
+	       var $service_price = $(this).val();
+
+	       edit_additional_services_price($service_id,$service_price);
+	  });
+
+
 	       
 	});
-</script>	   
-   <table class="show_tables" style="max-width: 700px; text-align: left;">
-      			<tr>
-						<th width="160">Название компании</th>
-						<td><?php echo DB2Web($row['company_name_'])?></td>
-						<td rowspan="4" align="center">Логотип</td>
-				</tr>
-      			<tr>
-						<th>Телефон</th>
-						<td><?php echo DB2Web($row['phone_'])?></td>
-				</tr>
-      			<tr>
-						<th>Выполнено заказов</th>
-						<td>Надо вставить расчет</td>
-				</tr>
-      			<tr>
-						<th>Добавлено заказов</th>
-						<td>Надо вставить расчет</td>
-				</tr>
-      			<tr>
-						<th>Описание</th>
-						<td colspan="2"><?php echo DB2Web($row['description_'])?></td>
-				</tr>
-   </table>
+</script>
+     <table id="company_info" class="show_tables" style="max-width: 700px; text-align: left;">
+	  <tr>
+	       <th width="160">Название компании</th>
+	       <td>
+		    <input id="company_name" type="text" size="40" value="<?php echo DB2Web($row['company_name_']).'" '.($_SESSION['user_group'] == 2 ? 'readonly="readonly"' : '');?>" />
+	       </td>
+	       <td rowspan="4" align="center">Логотип</td>
+	  </tr>
+	  <tr>
+	       <th>Телефон</th>
+	       <td>
+		    <input id="Phone_Number" type="text" size="40" value="<?php echo DB2Web($row['phone_']).'" '.($_SESSION['user_group'] == 2 ? 'readonly="readonly"' : '');?> />
+	       </td>
+	  </tr>
+	  <tr>
+	       <th>Выполнено заказов</th>
+	       <td>-</td>
+	  </tr>
+	  <tr>
+	       <th>Добавлено заказов</th>
+	       <td>-</td>
+	  </tr>
+	  <tr>
+	       <th>Описание</th>
+	       <td colspan="2">
+		    <textarea id="Description" rows="5" style="width: 98%;" <?php echo($_SESSION['user_group'] == 2 ? 'readonly="readonly"' : '').'>'.DB2Web($row['description_']);?></textarea>
+	       </td>
+	  </tr>
+     </table>
+<?php if (($_SESSION['user_group'] == 0) || ($_SESSION['user_group'] == 1)){?>   
 <br/>
 Классы автомобилей
 <br/>
@@ -303,6 +342,35 @@ while ($line = mysql_fetch_assoc($res_car_classes)){
 	  </tr>
 <?   }	?>	  
      
+     </table>
+<br/>
+Стоимость доп. услуг
+<br/>
+     <table id="additional_services" class="show_tables" style="width: auto;">
+	  <tr>
+	       <th>Название</th><th>Цена</th>
+	  </tr>
+	  <tr>
+	       <td>Крупный багаж</td><td><input id="luggage_price" class="numbers_only" type="text" size="4" maxlength="4" value="<?php echo $row['luggage_price_']?>"/></td>
+	  </tr>
+	  <tr>
+	       <td>Детское кресло</td><td><input id="child_armchair_price" class="numbers_only" type="text" size="4" maxlength="4" value="<?php echo $row['child_armchair_price_']?>" /></td>
+	  </tr>
+	  <tr>
+	       <td>Заезд на предприятие</td><td><input id="entry_price" class="numbers_only" type="text" size="4" maxlength="4" value="<?php echo $row['entry_price_']?>" /></td>
+	  </tr>
+	  <tr>
+	       <td>Вокзал</td><td><input id="vokzal_price" class="numbers_only" type="text" size="4" maxlength="4" value="<?php echo $row['vokzal_price_']?>" /></td>
+	  </tr>
+	  <tr>
+	       <td>Аэропорт</td><td><input id="airport_price" class="numbers_only" type="text" size="4" maxlength="4" value="<?php echo $row['airport_price_']?>" /></td>
+	  </tr>
+	  <tr>
+	       <td>Трансферт с табличкой</td><td><input id="transfert_table_price" class="numbers_only" type="text" size="4" maxlength="4" value="<?php echo $row['transfert_table_price_']?>" /></td>
+	  </tr>
+	  <tr>
+	       <td>Животные</td><td><input id="animals" class="numbers_only" type="text" size="4" maxlength="4" value="<?php echo $row['animals_']?>" /></td>
+	  </tr>		  
      </table>
 <br/>
 Периоды времени
@@ -380,3 +448,4 @@ while ($line = mysql_fetch_assoc($res_car_classes)){
 			      </td>						
 		        </tr>
     </table>
+<?php }?>

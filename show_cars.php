@@ -9,17 +9,17 @@ session_start();
    include_once('db_ini.php');
    $company_id_ = $_GET['company_id'];
    $res_cars = mysql_query(' SELECT cars.car_id
-						     ,cars.class_id
-						     ,cars.reg_number
-						     ,cars.model
-						     ,cars.color
-						     ,cars.car_name
-						     ,car_type.type_name
-						     ,car_classes.class_name'.
-   					' FROM cars '.
-   					' INNER JOIN car_type ON car_type.id = cars.car_type'.
-   					' LEFT JOIN car_classes ON car_classes.class_id = cars.class_id'.
-   					' WHERE cars.company_id = '.$company_id_);
+		         ,cars.class_id
+		         ,cars.reg_number
+		         ,cars.model
+		         ,cars.color
+		         ,cars.car_name
+		         ,car_type.type_name
+		         ,car_classes.class_name'.
+		    ' FROM cars '.
+		    ' INNER JOIN car_type ON car_type.id = cars.car_type'.
+		    ' LEFT JOIN car_classes ON car_classes.class_id = cars.class_id'.
+		    ' WHERE cars.company_id = '.$company_id_);
    
    $res_car_type = mysql_query(' SELECT id, type_name FROM  car_type');
    
@@ -75,16 +75,16 @@ session_start();
 		</tr>
 		<tr>
 			<td>						
-				<input type="text" size="10" name="car_nomer" id="car_nomer" placeholder="Гос. Номер" /> 		
+				<input type="text" size="15" name="car_name"  id="car_name"  placeholder="Название" /> 
 			</td>
 			<td>						
 				<input type="text" size="10" name="car_model" id="car_model" placeholder="Модель" /> 		
 			</td>
 			<td>						
-				<input type="text" size="5" name="car_color" id="car_color" placeholder="Цвет" /> 		
+				<input type="text" size="10" name="car_nomer" id="car_nomer" placeholder="Гос. Номер" /> 		
 			</td>
 			<td align="left">	
-				<input type="text" size="15" name="car_name"  id="car_name"  placeholder="Название" /> 
+				<input type="text" size="5" name="car_color" id="car_color" placeholder="Цвет" /> 		
 			</td>
 			<td>
 				<select name="car_type" id="car_type">
